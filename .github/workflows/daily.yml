@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -27,12 +29,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate digest
+      - name: Generate and deliver digest
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-6-luna' }}
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || 'https://api.zhizengzeng.com/v1' }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_LIMIT: ${{ vars.HF_LIMIT || '100' }}
           TOP_N: ${{ vars.TOP_N || '3' }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python daily_paper.py
 
