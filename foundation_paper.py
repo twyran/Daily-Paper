@@ -123,12 +123,14 @@ def fetch_foundation_progress(repo: str, token: str) -> tuple[set[str], set[str]
 
     return recommended, completed
 
-def select_foundation_papers(papers: list[dict], recent_issues: list[dict], recommended_ids: set[str], completed_ids: set[str]) -> list[dict]:
-    available = [p for p in papers if p.get("id") not in completed_ids]
+def select_foundation_papers(papers: list[dict], recent_issues: list[dict], recommended_ids: set[str], completed_ids: set[str], session_exclude_ids: set[str] | None = None) -> list[dict]:
+    session_exclude_ids = session_exclude_ids or set()
+    blocked_ids = completed_ids | session_exclude_ids
+    available = [p for p in papers if p.get("id") not in blocked_ids]
     if not available:
-        available = papers
+        available = [p for p in papers if p.get("id") not in completed_ids] or papers
 
-    incomplete_backlog = sorted(recommended_ids - completed_ids)
+    incomplete_backlog = sorted((recommended_ids - completed_ids) - session_exclude_ids)
 
     client = OpenAI(base_url=BASE_URL)
     recent_context = "\n\n".join(
@@ -167,6 +169,9 @@ Previously recommended but NOT completed IDs:
 
 Completed IDs (must not be selected):
 {json.dumps(sorted(completed_ids), ensure_ascii=False)}
+
+Current reroll session excluded IDs (must not be selected in this reroll chain):
+{json.dumps(sorted(session_exclude_ids), ensure_ascii=False)}
 
 Available foundation papers:
 {json.dumps(available, ensure_ascii=False)}
@@ -270,7 +275,7 @@ def append_missing_progress(existing_body: str, selected: list[dict]) -> str:
     return existing_body.rstrip() + "\n\n### 换批论文阅读进度\n\n" + "\n".join(missing) + "\n"
 
 
-def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | None = None) -> dict:
+def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | None = None, prior_exclude_ids: set[str] | None = None) -> dict:
     elements = []
     for i, p in enumerate(selected, start=1):
         goals = "\n".join(f"• {x}" for x in p.get("learning_goals", [])[:4])
@@ -309,7 +314,9 @@ def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | 
         if i != len(selected):
             elements.append({"tag": "hr"})
 
+    prior_exclude_ids = prior_exclude_ids or set()
     current_ids = [p.get("id") for p in selected if p.get("id")]
+    reroll_exclude_ids = sorted(prior_exclude_ids | set(current_ids))
     elements.append({
         "tag": "action",
         "actions": [{
@@ -318,7 +325,7 @@ def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | 
             "type": "primary",
             "value": {
                 "action": "reroll",
-                "exclude_ids": ",".join(current_ids),
+                "exclude_ids": ",".join(reroll_exclude_ids),
             },
         }],
     })
@@ -356,7 +363,7 @@ def get_feishu_tenant_access_token() -> str:
 
 
 
-def send_feishu(run_date: str, selected: list[dict], progress_url: str | None = None) -> None:
+def send_feishu(run_date: str, selected: list[dict], progress_url: str | None = None, prior_exclude_ids: set[str] | None = None) -> None:
     open_id = os.getenv("FEISHU_OPEN_ID")
     if not open_id:
         raise RuntimeError("FEISHU_OPEN_ID is not set")
@@ -369,7 +376,7 @@ def send_feishu(run_date: str, selected: list[dict], progress_url: str | None = 
         body={
             "receive_id": open_id,
             "msg_type": "interactive",
-            "content": json.dumps(render_feishu_card(run_date, selected, progress_url), ensure_ascii=False),
+            "content": json.dumps(render_feishu_card(run_date, selected, progress_url, prior_exclude_ids), ensure_ascii=False),
         },
     )
     if result.get("code") != 0:
@@ -422,8 +429,7 @@ def main():
     recent = fetch_recent_daily_issues(repo, token, days=7)
     recommended, completed = fetch_foundation_progress(repo, token)
     explicit_exclude = {x.strip() for x in os.getenv("FOUNDATION_EXCLUDE_IDS", "").split(",") if x.strip()}
-    completed = completed | explicit_exclude
-    selected = select_foundation_papers(papers, recent, recommended, completed)
+    selected = select_foundation_papers(papers, recent, recommended, completed, explicit_exclude)
 
     run_date = datetime.now(LOCAL_TZ).date().isoformat()
     body = render_markdown(run_date, selected)
@@ -450,7 +456,7 @@ def main():
         issue_url = issue.get("html_url")
         print(f"Created issue: {issue_url}")
 
-    send_feishu(run_date, selected, issue_url)
+    send_feishu(run_date, selected, issue_url, explicit_exclude)
 
 
 if __name__ == "__main__":
