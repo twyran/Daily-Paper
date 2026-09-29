@@ -47,7 +47,7 @@ GitHub Actions 默认每天 **08:00（Asia/Singapore / 北京时间）**运行�
 
 可选：在仓库的 Actions Variables 中添加：
 
-- `OPENAI_MODEL`：默认 `gpt-6-luna`
+- `OPENAI_MODEL`：默认 `gpt-6-luna`\n- `OPENAI_BASE_URL`：默认 `https://api.zhizengzeng.com/v1`（智增增 OpenAI 兼容接口）
 - `TOP_N`：默认 `3`
 
 ## 手动测试
