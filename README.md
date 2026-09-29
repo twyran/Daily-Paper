@@ -140,3 +140,29 @@ Foundation Track 不再把“推荐过”当成“读完了”。
 手动测试：
 
 `Actions → Weekly Foundation Papers → Run workflow`
+
+
+## 飞书卡片内交互
+
+Foundation 卡片现在支持两类动作：
+
+- **✅ 标记已读**：在飞书里直接点击，后台会把对应 Foundation Issue 的任务框更新为已完成。
+- **🔄 换一批**：点击后触发一次新的 Foundation workflow，并自动排除当前这批论文，避免马上重复。
+
+这两个按钮需要一个公网回调地址。仓库已提供 Vercel Serverless Function：
+
+`api/feishu_callback.py`
+
+部署后需要在 Vercel 环境变量中配置：
+
+- `GITHUB_PAT`：仅授予本仓库 Issues 写入和 Actions 写入权限的 fine-grained token
+- `GITHUB_REPOSITORY`：`twyran/Daily-Paper`
+- `FEISHU_OPEN_ID`：用于限制只有你的飞书账号可以操作
+- `FEISHU_VERIFICATION_TOKEN`：可选，若飞书卡片回调配置启用了 verification token，则填入对应值
+
+部署成功后，把：
+
+`https://<你的域名>/api/feishu_callback`
+
+配置到飞书自建应用的**消息卡片回调地址**。
+
