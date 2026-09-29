@@ -259,6 +259,17 @@ def render_markdown(run_date: str, selected: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def append_missing_progress(existing_body: str, selected: list[dict]) -> str:
+    missing = []
+    for paper in selected:
+        marker = f"<!-- foundation_id:{paper['id']} -->"
+        if marker not in existing_body:
+            missing.append(f"- [ ] **已读：{paper['title']}** {marker}")
+    if not missing:
+        return existing_body
+    return existing_body.rstrip() + "\n\n### 换批论文阅读进度\n\n" + "\n".join(missing) + "\n"
+
+
 def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | None = None) -> dict:
     elements = []
     for i, p in enumerate(selected, start=1):
@@ -428,7 +439,12 @@ def main():
             issue = update_issue_body(repo, token, issue["number"], body)
             print(f"Upgraded legacy Foundation issue with progress checkboxes: {title}")
         else:
-            print(f"Issue already exists: {title}")
+            updated_body = append_missing_progress(existing_body, selected)
+            if updated_body != existing_body:
+                update_issue_body(repo, token, issue["number"], updated_body)
+                print(f"Added new batch progress checkboxes: {title}")
+            else:
+                print(f"Issue already exists: {title}")
     else:
         issue = create_issue(repo, token, title, body)
         issue_url = issue.get("html_url")

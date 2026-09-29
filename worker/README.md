@@ -4,6 +4,10 @@
 
 目前测试部署：阿里云 FC，杭州地域，函数 `daily-paper-feishu-callback`，Node.js 20，入口 `index.handler`。
 
+回调地址：`https://daily-pcallback-jmxxwrgaat.cn-hangzhou.fcapp.run`。已在飞书保存验证并发布；真实卡片点击已确认可以更新 Issue 和触发带排除列表的 workflow_dispatch。
+
+同一天换批复用当天 Issue。`foundation_paper.py` 在发送卡片前补齐新论文的 checkbox，保留已有阅读状态；回归检查：`python -m unittest test_foundation_progress`。
+
 ```sh
 npm install
 npm run build:fc
