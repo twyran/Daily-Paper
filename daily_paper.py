@@ -10,7 +10,7 @@ from openai import OpenAI
 
 FEED_URL = "https://raw.githubusercontent.com/xianshang33/llm-paper-daily/main/feed-papers.json"
 TOP_N = int(os.getenv("TOP_N", "3"))
-MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6-luna")
+MODEL = os.getenv("OPENAI_MODEL", "gpt-6-luna")
 
 USER_PROFILE = """
 You are ranking papers for a second-year master's student preparing for LLM algorithm internships.
