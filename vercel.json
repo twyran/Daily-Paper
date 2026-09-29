@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/feishu_callback.py": {
-      "runtime": "python3.11"
-    }
-  }
-}
