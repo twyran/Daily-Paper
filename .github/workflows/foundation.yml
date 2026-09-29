@@ -1,0 +1,48 @@
+name: Weekly Foundation Papers
+
+on:
+  schedule:
+    - cron: "0 2 * * 6"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate and deliver foundation digest
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-6-luna' }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || 'https://api.zhizengzeng.com/v1' }}
+          FOUNDATION_TOP_N: ${{ vars.FOUNDATION_TOP_N || '2' }}
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_OPEN_ID: ${{ secrets.FEISHU_OPEN_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python foundation_paper.py
+
+      - name: Upload foundation digest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: foundation-digest
+          path: foundation_digest.md
+          if-no-files-found: error
+          retention-days: 30
