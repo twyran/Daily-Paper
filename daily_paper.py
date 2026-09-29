@@ -333,22 +333,43 @@ def render_feishu_card(run_date: str, selected: list[dict]) -> dict:
     }
 
 
-def send_feishu(run_date: str, selected: list[dict]) -> None:
-    webhook = os.getenv("FEISHU_WEBHOOK_URL")
-    if not webhook:
-        print("FEISHU_WEBHOOK_URL is not set; skipping Feishu delivery.")
-        return
+def get_feishu_tenant_access_token() -> str:
+    app_id = os.getenv("FEISHU_APP_ID")
+    app_secret = os.getenv("FEISHU_APP_SECRET")
+    if not app_id or not app_secret:
+        raise RuntimeError("FEISHU_APP_ID or FEISHU_APP_SECRET is not set")
 
     result = request_json(
-        webhook,
+        "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
         method="POST",
-        body=render_feishu_card(run_date, selected),
+        body={"app_id": app_id, "app_secret": app_secret},
     )
-    code = result.get("code", result.get("StatusCode", 0))
-    if code not in (0, None):
-        raise RuntimeError(f"Feishu webhook returned an error: {result}")
-    print("Feishu delivery succeeded.")
+    if result.get("code") != 0 or not result.get("tenant_access_token"):
+        raise RuntimeError(f"Failed to obtain Feishu tenant_access_token: {result}")
+    return result["tenant_access_token"]
 
+
+def send_feishu(run_date: str, selected: list[dict]) -> None:
+    open_id = os.getenv("FEISHU_OPEN_ID")
+    if not open_id:
+        raise RuntimeError("FEISHU_OPEN_ID is not set")
+
+    token = get_feishu_tenant_access_token()
+    content = json.dumps(render_feishu_card(run_date, selected), ensure_ascii=False)
+    result = request_json(
+        "https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=open_id",
+        headers={"Authorization": f"Bearer {token}"},
+        method="POST",
+        body={
+            "receive_id": open_id,
+            "msg_type": "interactive",
+            "content": content,
+        },
+    )
+    if result.get("code") != 0:
+        raise RuntimeError(f"Feishu message send failed: {result}")
+    message_id = ((result.get("data") or {}).get("message_id"))
+    print(f"Feishu private message sent successfully: {message_id or 'ok'}")
 
 def github_request(method: str, url: str, token: str, body: dict | None = None):
     return request_json(
