@@ -1,0 +1,456 @@
+{
+  "schema_version": "v1",
+  "tracks": [
+    "architecture_pretraining",
+    "post_training_alignment",
+    "reasoning",
+    "agents_tool_use",
+    "rag_memory_context",
+    "llm_systems"
+  ],
+  "papers": [
+    {
+      "id": "vaswani2017attention",
+      "title": "Attention Is All You Need",
+      "year": 2017,
+      "track": "architecture_pretraining",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/1706.03762",
+      "why_for_jobs": "理解 Transformer、自注意力、位置编码以及现代 LLM 架构的共同起点。",
+      "interview_topics": [
+        "self-attention",
+        "multi-head attention",
+        "positional encoding",
+        "complexity"
+      ]
+    },
+    {
+      "id": "radford2018gpt",
+      "title": "Improving Language Understanding by Generative Pre-Training",
+      "year": 2018,
+      "track": "architecture_pretraining",
+      "priority": "core",
+      "arxiv": "https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf",
+      "why_for_jobs": "理解 decoder-only 生成式预训练与下游迁移的早期范式。",
+      "interview_topics": [
+        "generative pretraining",
+        "decoder-only transformer",
+        "transfer learning"
+      ]
+    },
+    {
+      "id": "brown2020gpt3",
+      "title": "Language Models are Few-Shot Learners",
+      "year": 2020,
+      "track": "architecture_pretraining",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2005.14165",
+      "why_for_jobs": "理解规模扩展、in-context learning 与大模型能力涌现讨论的基础。",
+      "interview_topics": [
+        "few-shot prompting",
+        "in-context learning",
+        "scaling",
+        "emergent capabilities"
+      ]
+    },
+    {
+      "id": "kaplan2020scaling",
+      "title": "Scaling Laws for Neural Language Models",
+      "year": 2020,
+      "track": "architecture_pretraining",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2001.08361",
+      "why_for_jobs": "理解参数、数据、算力之间的经验缩放关系。",
+      "interview_topics": [
+        "scaling laws",
+        "compute allocation",
+        "loss scaling"
+      ]
+    },
+    {
+      "id": "hoffmann2022chinchilla",
+      "title": "Training Compute-Optimal Large Language Models",
+      "year": 2022,
+      "track": "architecture_pretraining",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2203.15556",
+      "why_for_jobs": "理解 compute-optimal training 与数据规模的重要性。",
+      "interview_topics": [
+        "Chinchilla scaling",
+        "tokens vs parameters",
+        "compute optimality"
+      ]
+    },
+    {
+      "id": "wei2021finetuned",
+      "title": "Finetuned Language Models Are Zero-Shot Learners",
+      "year": 2021,
+      "track": "post_training_alignment",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2109.01652",
+      "why_for_jobs": "理解 instruction tuning 为什么能带来跨任务泛化。",
+      "interview_topics": [
+        "instruction tuning",
+        "task mixture",
+        "zero-shot generalization"
+      ]
+    },
+    {
+      "id": "ouyang2022instructgpt",
+      "title": "Training language models to follow instructions with human feedback",
+      "year": 2022,
+      "track": "post_training_alignment",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2203.02155",
+      "why_for_jobs": "RLHF pipeline 的经典工作，Post-training 岗位高频基础。",
+      "interview_topics": [
+        "SFT",
+        "reward modeling",
+        "PPO",
+        "KL penalty",
+        "human preference data"
+      ]
+    },
+    {
+      "id": "bai2022constitutional",
+      "title": "Constitutional AI: Harmlessness from AI Feedback",
+      "year": 2022,
+      "track": "post_training_alignment",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2212.08073",
+      "why_for_jobs": "理解 RLAIF、self-critique 与 AI feedback。",
+      "interview_topics": [
+        "RLAIF",
+        "constitutional principles",
+        "self-critique",
+        "preference data"
+      ]
+    },
+    {
+      "id": "rafailov2023dpo",
+      "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "year": 2023,
+      "track": "post_training_alignment",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2305.18290",
+      "why_for_jobs": "Preference optimization 的核心基础工作，面试中常与 RLHF/PPO 对比。",
+      "interview_topics": [
+        "DPO objective",
+        "Bradley-Terry model",
+        "KL regularization",
+        "DPO vs PPO"
+      ]
+    },
+    {
+      "id": "gulcehre2023rlhf",
+      "title": "Reinforced Self-Training (ReST) for Language Modeling",
+      "year": 2023,
+      "track": "post_training_alignment",
+      "priority": "optional",
+      "arxiv": "https://arxiv.org/abs/2308.08998",
+      "why_for_jobs": "理解离线生成、过滤与迭代式自训练。",
+      "interview_topics": [
+        "offline RL",
+        "self-training",
+        "data filtering",
+        "reward models"
+      ]
+    },
+    {
+      "id": "wei2022cot",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "year": 2022,
+      "track": "reasoning",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2201.11903",
+      "why_for_jobs": "现代 reasoning 方向的基本坐标系。",
+      "interview_topics": [
+        "chain-of-thought",
+        "few-shot reasoning",
+        "scale effects"
+      ]
+    },
+    {
+      "id": "wang2022selfconsistency",
+      "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+      "year": 2022,
+      "track": "reasoning",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2203.11171",
+      "why_for_jobs": "理解 sampling + aggregation 如何提升推理可靠性。",
+      "interview_topics": [
+        "self-consistency",
+        "sampling",
+        "majority voting",
+        "reasoning diversity"
+      ]
+    },
+    {
+      "id": "zelikman2022star",
+      "title": "STaR: Bootstrapping Reasoning With Reasoning",
+      "year": 2022,
+      "track": "reasoning",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2203.14465",
+      "why_for_jobs": "连接 reasoning、synthetic data 与 self-training。",
+      "interview_topics": [
+        "rationale bootstrapping",
+        "self-training",
+        "synthetic reasoning data"
+      ]
+    },
+    {
+      "id": "lightman2023letsverify",
+      "title": "Let's Verify Step by Step",
+      "year": 2023,
+      "track": "reasoning",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2305.20050",
+      "why_for_jobs": "理解 process reward model 与 outcome reward model 的区别。",
+      "interview_topics": [
+        "process supervision",
+        "PRM",
+        "ORM",
+        "verifier"
+      ]
+    },
+    {
+      "id": "yao2023tot",
+      "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+      "year": 2023,
+      "track": "reasoning",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2305.10601",
+      "why_for_jobs": "理解搜索式推理与 inference-time compute 的早期代表。",
+      "interview_topics": [
+        "search over thoughts",
+        "BFS/DFS",
+        "verifier",
+        "test-time compute"
+      ]
+    },
+    {
+      "id": "yao2022react",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "year": 2022,
+      "track": "agents_tool_use",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2210.03629",
+      "why_for_jobs": "Agent / tool-use 的基础论文，连接 reasoning 与 environment interaction。",
+      "interview_topics": [
+        "reason-act loop",
+        "tool use",
+        "trajectory",
+        "agent evaluation"
+      ]
+    },
+    {
+      "id": "schick2023toolformer",
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "year": 2023,
+      "track": "agents_tool_use",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2302.04761",
+      "why_for_jobs": "理解模型如何自监督学习 API 调用。",
+      "interview_topics": [
+        "tool-use data generation",
+        "API calls",
+        "self-supervision",
+        "filtering"
+      ]
+    },
+    {
+      "id": "wang2023voyager",
+      "title": "Voyager: An Open-Ended Embodied Agent with Large Language Models",
+      "year": 2023,
+      "track": "agents_tool_use",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2305.16291",
+      "why_for_jobs": "理解 long-horizon agent、技能库与自动 curriculum。",
+      "interview_topics": [
+        "skill library",
+        "automatic curriculum",
+        "long-horizon agents",
+        "self-verification"
+      ]
+    },
+    {
+      "id": "shinn2023reflexion",
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "year": 2023,
+      "track": "agents_tool_use",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2303.11366",
+      "why_for_jobs": "Agent reflection / memory / iterative improvement 的代表工作。",
+      "interview_topics": [
+        "reflection",
+        "episodic memory",
+        "verbal feedback",
+        "agent learning"
+      ]
+    },
+    {
+      "id": "park2023generativeagents",
+      "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+      "year": 2023,
+      "track": "rag_memory_context",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2304.03442",
+      "why_for_jobs": "Agent memory 架构中的 observation、reflection、retrieval 经典案例。",
+      "interview_topics": [
+        "agent memory",
+        "reflection",
+        "retrieval scoring",
+        "planning"
+      ]
+    },
+    {
+      "id": "packer2023memgpt",
+      "title": "MemGPT: Towards LLMs as Operating Systems",
+      "year": 2023,
+      "track": "rag_memory_context",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2310.08560",
+      "why_for_jobs": "理解有限 context 下的分层 memory management。",
+      "interview_topics": [
+        "memory hierarchy",
+        "context management",
+        "paging analogy",
+        "agent memory"
+      ]
+    },
+    {
+      "id": "lewis2020rag",
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "year": 2020,
+      "track": "rag_memory_context",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2005.11401",
+      "why_for_jobs": "RAG 的经典基础工作。",
+      "interview_topics": [
+        "retriever-generator",
+        "latent documents",
+        "RAG-sequence",
+        "RAG-token"
+      ]
+    },
+    {
+      "id": "karpukhin2020dpr",
+      "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+      "year": 2020,
+      "track": "rag_memory_context",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2004.04906",
+      "why_for_jobs": "理解 dense retrieval 与 dual encoder。",
+      "interview_topics": [
+        "dense retrieval",
+        "dual encoder",
+        "negative sampling",
+        "MIPS"
+      ]
+    },
+    {
+      "id": "borgeaud2021retro",
+      "title": "Improving language models by retrieving from trillions of tokens",
+      "year": 2021,
+      "track": "rag_memory_context",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2112.04426",
+      "why_for_jobs": "理解 retrieval 与预训练结合，而不只是 inference-time RAG。",
+      "interview_topics": [
+        "retrieval-augmented pretraining",
+        "nearest-neighbor chunks",
+        "scaling retrieval"
+      ]
+    },
+    {
+      "id": "dai2019transformerxl",
+      "title": "Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context",
+      "year": 2019,
+      "track": "rag_memory_context",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/1901.02860",
+      "why_for_jobs": "理解跨 segment 记忆与长上下文的经典方案。",
+      "interview_topics": [
+        "segment recurrence",
+        "relative positions",
+        "long context"
+      ]
+    },
+    {
+      "id": "dao2022flashattention",
+      "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+      "year": 2022,
+      "track": "llm_systems",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2205.14135",
+      "why_for_jobs": "LLM 训练与推理系统高频基础，理解 attention 的 IO 瓶颈。",
+      "interview_topics": [
+        "IO complexity",
+        "tiling",
+        "HBM",
+        "exact attention"
+      ]
+    },
+    {
+      "id": "kwon2023vllm",
+      "title": "Efficient Memory Management for Large Language Model Serving with PagedAttention",
+      "year": 2023,
+      "track": "llm_systems",
+      "priority": "must-read",
+      "arxiv": "https://arxiv.org/abs/2309.06180",
+      "why_for_jobs": "LLM serving / KV cache 管理的核心工程论文。",
+      "interview_topics": [
+        "PagedAttention",
+        "KV cache",
+        "fragmentation",
+        "continuous batching"
+      ]
+    },
+    {
+      "id": "leviathan2023speculative",
+      "title": "Fast Inference from Transformers via Speculative Decoding",
+      "year": 2023,
+      "track": "llm_systems",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2211.17192",
+      "why_for_jobs": "理解 speculative decoding 的正确性与加速机制。",
+      "interview_topics": [
+        "draft model",
+        "accept-reject",
+        "latency",
+        "exact sampling"
+      ]
+    },
+    {
+      "id": "shazeer2017moe",
+      "title": "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer",
+      "year": 2017,
+      "track": "architecture_pretraining",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/1701.06538",
+      "why_for_jobs": "理解现代 MoE 大模型的早期基础。",
+      "interview_topics": [
+        "sparse routing",
+        "experts",
+        "load balancing",
+        "capacity"
+      ]
+    },
+    {
+      "id": "fedus2021switch",
+      "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+      "year": 2021,
+      "track": "architecture_pretraining",
+      "priority": "core",
+      "arxiv": "https://arxiv.org/abs/2101.03961",
+      "why_for_jobs": "MoE routing 与稀疏扩展的重要代表。",
+      "interview_topics": [
+        "Switch routing",
+        "expert capacity",
+        "load balancing",
+        "sparse scaling"
+      ]
+    }
+  ]
+}
