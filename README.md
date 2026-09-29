@@ -47,7 +47,7 @@ GitHub Actions 默认每天 **08:00（Asia/Singapore / 北京时间）**运行�
 
 可选：在仓库的 Actions Variables 中添加：
 
-- `OPENAI_MODEL`：默认 `gpt-5.6-luna`
+- `OPENAI_MODEL`：默认 `gpt-6-luna`
 - `TOP_N`：默认 `3`
 
 ## 手动测试
