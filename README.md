@@ -118,7 +118,20 @@ Foundation Track 当前覆盖：
 
 每周选择时会读取最近 7 天的 Daily Digest，因此如果这一周前沿推荐集中在 Agent Memory / Context Management，Foundation Track 会更倾向补 ReAct、MemGPT、Generative Agents、RAG 等地基；如果最近集中在 RLVR / Reward / Verifier，则会优先补 InstructGPT、DPO、Let's Verify Step by Step 等。
 
-系统会在 GitHub Issue 中记录已经推荐过的 Foundation Paper ID，尽量避免重复。
+Foundation Track 不再把“推荐过”当成“读完了”。
+
+每周 Foundation Issue 中，每篇论文前都会有一个 GitHub task checkbox：
+
+- 未勾选：仍属于未完成 backlog，以后可以再次推荐
+- 勾选为 [x]：才视为已完成，并从后续候选池排除
+
+因此即使某周忙，没有读推荐的 Foundation Paper，也不会永久错过。飞书卡片里会提供“读完后勾选进度”的按钮，跳转到对应 GitHub Issue。
+
+论文池目前扩充到 **77 篇**，并统一分为三级：
+
+- **必须掌握（must_know）**：求职前应能讲清核心方法、动机、关键公式或系统设计，并能回答常见追问
+- **推荐精读（recommended）**：与目标岗位高度相关，应理解问题、方法、实验结论及和相邻工作的区别
+- **知道即可（awareness）**：用于建立技术地图和历史脉络，通常快速读摘要、主图和结论即可
 
 可选 Actions Variable：
 
