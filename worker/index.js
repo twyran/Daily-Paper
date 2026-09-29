@@ -86,11 +86,12 @@ export default {
     if (request.method !== "POST") return jsonResponse({ error: "method not allowed" }, 405);
     try {
       const payload = await request.json();
+      const challenge = payload?.challenge ?? payload?.event?.challenge;
+      if (typeof challenge === "string") return jsonResponse({ challenge });
       const verificationToken = payload?.header?.token || payload?.token;
       if (env.FEISHU_VERIFICATION_TOKEN && verificationToken !== env.FEISHU_VERIFICATION_TOKEN) {
         return jsonResponse({ error: "verification token mismatch" }, 403);
       }
-      if (payload && payload.challenge) return jsonResponse({ challenge: payload.challenge });
       const operator = extractOperatorOpenId(payload);
       if (!env.FEISHU_OPEN_ID || operator !== env.FEISHU_OPEN_ID) {
         return jsonResponse({ error: "operator not allowed" }, 403);

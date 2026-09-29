@@ -148,7 +148,7 @@ Foundation 卡片支持：
 - **✅ 标记已读**：直接在飞书中标记完成，后台更新 Foundation Issue 进度。
 - **🔄 换一批**：触发新的 Foundation 推荐，并排除当前这批论文。
 
-交互按钮需要一个公网 HTTPS 回调地址。现在使用 **Cloudflare Workers**，不再依赖 Vercel。
+交互按钮需要一个公网 HTTPS 回调地址。当前迁移至 **阿里云函数计算 FC** 进行联通测试，部署与配置参见 [回调服务说明](worker/README.md)。下方 Cloudflare 配置保留供旧部署维护；`workers.dev` 在飞书回调验证中出现网络不可达问题。
 
 ### Cloudflare Worker 文件
 

@@ -6,3 +6,4 @@ daily_digest.md
 node_modules/
 .wrangler/
 .dev.vars*
+dist/
