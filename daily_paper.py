@@ -10,7 +10,7 @@ from openai import OpenAI
 
 FEED_URL = "https://raw.githubusercontent.com/xianshang33/llm-paper-daily/main/feed-papers.json"
 TOP_N = int(os.getenv("TOP_N", "3"))
-MODEL = os.getenv("OPENAI_MODEL", "gpt-6-luna")
+MODEL = os.getenv("OPENAI_MODEL", "gpt-6-luna")\nBASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.zhizengzeng.com/v1")
 
 USER_PROFILE = """
 You are ranking papers for a second-year master's student preparing for LLM algorithm internships.
@@ -74,7 +74,7 @@ def build_candidates(feed: dict) -> list[dict]:
     return out
 
 def rank_papers(candidates: list[dict]) -> list[dict]:
-    client = OpenAI()
+    client = OpenAI(base_url=BASE_URL)
     payload = json.dumps(candidates, ensure_ascii=False)
     prompt = f"""
 {USER_PROFILE}
