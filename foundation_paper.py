@@ -284,23 +284,38 @@ def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | 
             "text": {"tag": "plain_text", "content": "打开论文"},
             "type": "primary",
             "url": p.get("arxiv"),
+        }, {
+            "tag": "button",
+            "text": {"tag": "plain_text", "content": "✅ 标记已读"},
+            "type": "default",
+            "value": {
+                "action": "mark_read",
+                "paper_id": p.get("id"),
+                "issue_url": progress_url or "",
+            },
         }]
-        if progress_url:
-            actions.append({
-                "tag": "button",
-                "text": {"tag": "plain_text", "content": "读完后勾选进度"},
-                "type": "default",
-                "url": progress_url,
-            })
         elements.append({"tag": "action", "actions": actions})
         if i != len(selected):
             elements.append({"tag": "hr"})
 
+    current_ids = [p.get("id") for p in selected if p.get("id")]
+    elements.append({
+        "tag": "action",
+        "actions": [{
+            "tag": "button",
+            "text": {"tag": "plain_text", "content": "🔄 换一批"},
+            "type": "primary",
+            "value": {
+                "action": "reroll",
+                "exclude_ids": ",".join(current_ids),
+            },
+        }],
+    })
     elements.append({
         "tag": "note",
         "elements": [{
             "tag": "plain_text",
-            "content": "只有在 GitHub 进度页勾选“已读”后才算完成；未完成论文以后仍可能再次推荐。",
+            "content": "可直接在飞书标记已读；不感兴趣或都读过时可点“换一批”。",
         }],
     })
 
@@ -395,6 +410,8 @@ def main():
     papers = load_foundation_papers()
     recent = fetch_recent_daily_issues(repo, token, days=7)
     recommended, completed = fetch_foundation_progress(repo, token)
+    explicit_exclude = {x.strip() for x in os.getenv("FOUNDATION_EXCLUDE_IDS", "").split(",") if x.strip()}
+    completed = completed | explicit_exclude
     selected = select_foundation_papers(papers, recent, recommended, completed)
 
     run_date = datetime.now(LOCAL_TZ).date().isoformat()
