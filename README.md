@@ -31,7 +31,7 @@ Settings → Secrets and variables → Actions → New repository secret
 添加以下 Secrets：
 
 - `OPENAI_API_KEY`：智增增 API Key
-- `FEISHU_WEBHOOK_URL`：飞书群自定义机器人的完整 Webhook URL
+- `FEISHU_APP_ID`：飞书自建应用 App ID\n- `FEISHU_APP_SECRET`：飞书自建应用 App Secret\n- `FEISHU_OPEN_ID`：接收私聊消息的用户 open_id
 
 可选：
 
@@ -43,25 +43,15 @@ Settings → Secrets and variables → Actions → New repository secret
 
 ## 飞书机器人配置
 
-在你希望接收论文的飞书群：
+使用企业自建应用机器人主动给指定用户发送私聊消息，不再使用群 Webhook。
 
-1. 打开群设置。
-2. 添加“自定义机器人”。
-3. 创建机器人，例如命名为 Daily Paper。
-4. 复制生成的 Webhook 地址。
-5. 在 GitHub 仓库 Secret 中创建 `FEISHU_WEBHOOK_URL`，把完整 Webhook 地址作为值。
+需要在 GitHub Secrets 中配置：
 
-不要把 Webhook URL 提交到公开仓库。
+- `FEISHU_APP_ID`
+- `FEISHU_APP_SECRET`
+- `FEISHU_OPEN_ID`
 
-每天推送会是一张消息卡片，每篇包含：
-
-- 标题
-- 精读 / 快速读 / 只看摘要
-- Hugging Face upvotes
-- 推荐理由
-- 核心贡献
-- 面试可能追问
-- Hugging Face / arXiv / PDF 链接
+运行时脚本会先用 App ID + App Secret 获取 `tenant_access_token`，再通过 `open_id` 调用飞书消息接口发送私聊。
 
 ## Hugging Face 数据源
 
