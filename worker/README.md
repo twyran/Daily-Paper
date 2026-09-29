@@ -1,5 +1,7 @@
 # 飞书交互回调
 
+当前正在迁移华为云，函数代码已上传，但公网入口被独立计费的 APIG 专享网关要求阻塞，尚未切换飞书配置。继续工作参见 [FunctionGraph 迁移状态](FUNCTIONGRAPH.md)。下文保留原部署背景，不代表当前交互可用。
+
 业务逻辑位于 `index.js`，`fc.mjs` 仅将阿里云 FC 3.0 的 HTTP 事件转换为相同处理逻辑使用的 Request/Response。
 
 当前目标部署：Cloudflare Workers Free，`daily-paper-feishu-callback`。执行 `npm install`、`npx wrangler login`、`npm run deploy`，用 Wrangler Secrets 配置凭证。
