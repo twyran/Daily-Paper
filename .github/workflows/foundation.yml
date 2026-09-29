@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 2 * * 6"
   workflow_dispatch:
+    inputs:
+      exclude_ids:
+        description: "Comma-separated paper IDs to exclude for reroll"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -33,6 +38,7 @@ jobs:
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-6-luna' }}
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || 'https://api.zhizengzeng.com/v1' }}
           FOUNDATION_TOP_N: ${{ vars.FOUNDATION_TOP_N || '2' }}
+          FOUNDATION_EXCLUDE_IDS: ${{ inputs.exclude_ids || '' }}
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
           FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
           FEISHU_OPEN_ID: ${{ secrets.FEISHU_OPEN_ID }}
