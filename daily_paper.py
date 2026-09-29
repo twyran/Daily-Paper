@@ -18,28 +18,87 @@ BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.zhizengzeng.com/v1")
 LOCAL_TZ = ZoneInfo("Asia/Singapore")
 
 USER_PROFILE = """
-You are ranking papers for a second-year master's student preparing for LLM algorithm internships.
+You are ranking papers for a second-year master's student targeting LLM algorithm internships and new-grad roles.
+The goal is employment relevance first, while still preserving long-term technical depth.
 
-Primary interests:
-1. LLM reasoning
-2. post-training / RLHF / DPO / RL
-3. agent / tool use
-4. RAG
-5. efficient LLM / inference
+Primary job-relevant directions, roughly in priority order:
 
-Prefer papers that:
-- introduce a meaningful training or inference idea
-- are useful for understanding current LLM research directions
-- are likely to support technical interview discussion
-- have solid experiments or open-source code
-- come from credible research teams, when that signal is available
-- have meaningful Hugging Face community interest, but do not blindly rank by upvotes
+1. Post-training and alignment
+- SFT
+- RLHF / RLAIF
+- DPO and other preference optimization
+- RL / RLVR for reasoning and agents
+- reward models, verifiers, graders
+- synthetic data
+- data curation, data mixture, data pipelines
+- evaluation and post-training infrastructure
+
+2. Agent systems
+- tool use / function calling
+- coding agents
+- computer use
+- long-horizon agents
+- planning and execution
+- multi-agent systems
+- agent environments, trajectories and rewards
+- agent memory
+- personalization
+- context management for agents
+- self-reflection / self-improvement
+
+3. Reasoning
+- reasoning models
+- process supervision
+- test-time scaling
+- inference-time compute
+- search / verifier-guided reasoning
+- self-correction and reflection
+- mathematical / code reasoning
+
+4. Retrieval, context and memory
+- RAG
+- retrieval and reranking
+- long context
+- context engineering
+- external memory
+- knowledge integration
+
+5. LLM systems
+- inference optimization
+- serving
+- KV cache
+- speculative decoding
+- quantization
+- distributed inference
+- training efficiency
+- model serving for agents
+
+6. Pretraining / architecture / data
+- important work on model architecture, scaling, data, or pretraining
+- prioritize only when it has clear relevance to modern LLM practice or hiring
+
+Rank with these hidden considerations:
+- JD relevance: how directly the paper maps to work commonly mentioned in current LLM algorithm / agent / post-training roles
+- interview value: whether it supports meaningful technical discussion in interviews
+- research novelty: whether it introduces a non-trivial new idea
+- practical relevance: whether it affects real training, evaluation, agent, retrieval, or inference workflows
+- evidence quality: whether the experiments and comparisons described in the provided metadata look substantive
+- community signal: Hugging Face interest is useful but must not dominate the ranking
+
+Strongly prefer papers that combine multiple job-relevant themes, for example:
+- agent memory + post-training
+- tool use + RL
+- reasoning + verifier / reward model
+- coding agents + environment / trajectory generation
+- RAG + long-context / memory
+- inference systems + agent serving
 
 Down-rank papers that:
-- are mainly narrow benchmark papers
-- show only small metric improvements without a meaningful idea
-- are peripheral to core LLM research
-- are application-heavy with limited methodological novelty
+- are mainly narrow benchmarks
+- show only small metric gains without a meaningful idea
+- are peripheral applications with weak methodological contribution
+- are mostly opinion / position pieces unless unusually influential
+- are interesting academically but have little connection to likely LLM algorithm work
 
 Return at most TOP_N papers.
 For each paper, produce concise Chinese fields:
