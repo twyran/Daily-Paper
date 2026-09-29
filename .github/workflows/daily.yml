@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -35,7 +37,9 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_LIMIT: ${{ vars.HF_LIMIT || '100' }}
           TOP_N: ${{ vars.TOP_N || '3' }}
-          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_OPEN_ID: ${{ secrets.FEISHU_OPEN_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python daily_paper.py
 
