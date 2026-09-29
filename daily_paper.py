@@ -97,8 +97,12 @@ Return valid JSON only with this exact structure:
   ]
 }}
 """
-    response = client.responses.create(model=MODEL, input=prompt)
-    text = response.output_text.strip()
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.2,
+    )
+    text = (response.choices[0].message.content or "").strip()
     fence = chr(96) * 3
     if text.startswith(fence + "json"):
         text = text[7:]
