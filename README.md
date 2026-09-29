@@ -85,3 +85,45 @@ python daily_paper.py
 ## 自定义兴趣
 
 修改 `daily_paper.py` 中的 `USER_PROFILE` 即可调整关注方向和筛选标准。
+
+
+## Foundation Track（每周经典 / 基础论文）
+
+除了每天的前沿论文，本仓库还维护一条 Foundation Track，用来补齐与当前就业方向相关的经典与基础工作。
+
+默认每周六 **10:00（Asia/Singapore / 北京时间）**运行：
+
+`Hugging Face 前沿阅读记录 → 最近 7 天 Daily Digest → GPT-6 Luna 匹配基础缺口 → 推荐 2 篇 Foundation Papers → 飞书私聊 + GitHub Issue`
+
+Foundation Track 当前覆盖：
+
+- Transformer / Scaling / Pretraining
+- Instruction Tuning / RLHF / DPO / Alignment
+- Reasoning / CoT / PRM / Test-time Search
+- Agent / Tool Use / Reflection / Long-horizon Agent
+- RAG / Retrieval / Agent Memory / Long Context
+- LLM Serving / KV Cache / FlashAttention / Speculative Decoding
+
+基础论文池保存在：
+
+`foundation_papers.json`
+
+目前包含约 30 篇核心论文，并标注：
+
+- track
+- priority
+- 为什么和就业相关
+- 常见面试知识点
+- 论文链接
+
+每周选择时会读取最近 7 天的 Daily Digest，因此如果这一周前沿推荐集中在 Agent Memory / Context Management，Foundation Track 会更倾向补 ReAct、MemGPT、Generative Agents、RAG 等地基；如果最近集中在 RLVR / Reward / Verifier，则会优先补 InstructGPT、DPO、Let's Verify Step by Step 等。
+
+系统会在 GitHub Issue 中记录已经推荐过的 Foundation Paper ID，尽量避免重复。
+
+可选 Actions Variable：
+
+- `FOUNDATION_TOP_N`：每周推荐数量，默认 `2`
+
+手动测试：
+
+`Actions → Weekly Foundation Papers → Run workflow`
