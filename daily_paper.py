@@ -349,21 +349,42 @@ def get_feishu_tenant_access_token() -> str:
     return result["tenant_access_token"]
 
 
+def render_feishu_text(run_date: str, selected: list[dict]) -> str:
+    lines = [f"Daily LLM Papers · {run_date}", ""]
+    medals = ["🥇", "🥈", "🥉"]
+    if not selected:
+        lines.append("今天没有筛出符合偏好的论文。")
+        return "\n".join(lines)
+
+    for i, p in enumerate(selected, start=1):
+        prefix = medals[i - 1] if i <= 3 else f"#{i}"
+        lines += [
+            f"{prefix} {p.get('title') or p['id']}",
+            f"阅读建议：{p.get('reading_level', '快速读')} · HF 👍 {p.get('upvotes', 0)}",
+            f"推荐理由：{p.get('why_recommended', '')}",
+            f"核心贡献：{p.get('core_contribution', '')}",
+            f"HF：{p.get('hf_url')}",
+            f"arXiv：{p.get('abs_url')}",
+            "",
+        ]
+    return "\n".join(lines)
+
+
 def send_feishu(run_date: str, selected: list[dict]) -> None:
     open_id = os.getenv("FEISHU_OPEN_ID")
     if not open_id:
         raise RuntimeError("FEISHU_OPEN_ID is not set")
 
     token = get_feishu_tenant_access_token()
-    content = json.dumps(render_feishu_card(run_date, selected), ensure_ascii=False)
+    text_content = render_feishu_text(run_date, selected)
     result = request_json(
         "https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=open_id",
         headers={"Authorization": f"Bearer {token}"},
         method="POST",
         body={
             "receive_id": open_id,
-            "msg_type": "interactive",
-            "content": content,
+            "msg_type": "text",
+            "content": json.dumps({"text": text_content}, ensure_ascii=False),
         },
     )
     if result.get("code") != 0:
