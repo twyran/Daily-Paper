@@ -278,60 +278,83 @@ def render_digest(feed: dict, selected: list[dict]) -> str:
 
 def render_feishu_card(run_date: str, selected: list[dict]) -> dict:
     elements = []
+
     if not selected:
-        elements.append(
-            {
-                "tag": "div",
-                "text": {"tag": "lark_md", "content": "今天没有筛出符合偏好的论文。"},
-            }
-        )
+        elements.append({
+            "tag": "div",
+            "text": {"tag": "lark_md", "content": "今天没有筛出符合偏好的论文。"},
+        })
     else:
         medals = ["🥇", "🥈", "🥉"]
-        for i, p in enumerate(selected, start=1):
+        for i, paper in enumerate(selected, start=1):
             prefix = medals[i - 1] if i <= 3 else f"#{i}"
-            title = p.get("title") or p["id"]
-            authors = ", ".join((p.get("authors") or [])[:6])
-            questions = "\n".join(f"• {q}" for q in p.get("interview_questions", [])[:3])
-            links = f"[HF]({p.get('hf_url')}) · [arXiv]({p.get('abs_url')}) · [PDF]({p.get('pdf_url')})"
-            content = (
-                f"**{prefix} {title}**\n"
-                f"**{p.get('reading_level', '快速读')}** · HF 👍 {p.get('upvotes', 0)}\n"
-                f"**作者**：{authors or '未提供'}\n"
-                f"**推荐理由**：{p.get('why_recommended', '')}\n"
-                f"**核心贡献**：{p.get('core_contribution', '')}\n"
-                f"**面试追问**：\n{questions}\n"
-                f"{links}"
-            )
-            elements.append(
-                {"tag": "div", "text": {"tag": "lark_md", "content": content}}
-            )
+            title = paper.get("title") or paper["id"]
+            authors = ", ".join((paper.get("authors") or [])[:6]) or "未提供"
+            questions = "\n".join(
+                f"{idx}. {q}"
+                for idx, q in enumerate(paper.get("interview_questions", [])[:3], start=1)
+            ) or "暂无"
+
+            elements.append({
+                "tag": "div",
+                "text": {
+                    "tag": "lark_md",
+                    "content": (
+                        f"**{prefix} {title}**\n"
+                        f"**阅读建议：** {paper.get('reading_level', '快速读')}    "
+                        f"**HF 👍：** {paper.get('upvotes', 0)}\n"
+                        f"**作者：** {authors}\n"
+                        f"**推荐理由：** {paper.get('why_recommended', '')}\n"
+                        f"**核心贡献：** {paper.get('core_contribution', '')}\n"
+                        f"**面试可能追问：**\n{questions}"
+                    ),
+                },
+            })
+
+            actions = []
+            if paper.get("hf_url"):
+                actions.append({
+                    "tag": "button",
+                    "text": {"tag": "plain_text", "content": "Hugging Face"},
+                    "type": "primary",
+                    "url": paper["hf_url"],
+                })
+            if paper.get("abs_url"):
+                actions.append({
+                    "tag": "button",
+                    "text": {"tag": "plain_text", "content": "arXiv"},
+                    "type": "default",
+                    "url": paper["abs_url"],
+                })
+            if paper.get("pdf_url"):
+                actions.append({
+                    "tag": "button",
+                    "text": {"tag": "plain_text", "content": "PDF"},
+                    "type": "default",
+                    "url": paper["pdf_url"],
+                })
+            if actions:
+                elements.append({"tag": "action", "actions": actions})
+
             if i != len(selected):
                 elements.append({"tag": "hr"})
 
-    elements.append(
-        {
-            "tag": "note",
-            "elements": [
-                {
-                    "tag": "plain_text",
-                    "content": f"HF Daily Papers → {MODEL} 二次筛选 · Top {len(selected)}",
-                }
-            ],
-        }
-    )
+    elements.append({
+        "tag": "note",
+        "elements": [{
+            "tag": "plain_text",
+            "content": f"Hugging Face Daily Papers → {MODEL} 二次筛选 · Top {len(selected)}",
+        }],
+    })
 
     return {
-        "msg_type": "interactive",
-        "card": {
-            "config": {"wide_screen_mode": True},
-            "header": {
-                "title": {"tag": "plain_text", "content": f"Daily LLM Papers · {run_date}"},
-                "template": "blue",
-            },
-            "elements": elements,
+        "config": {"wide_screen_mode": True},
+        "header": {
+            "template": "blue",
+            "title": {"tag": "plain_text", "content": f"Daily LLM Papers · {run_date}"},
         },
+        "elements": elements,
     }
-
 
 def get_feishu_tenant_access_token() -> str:
     app_id = os.getenv("FEISHU_APP_ID")
@@ -349,48 +372,27 @@ def get_feishu_tenant_access_token() -> str:
     return result["tenant_access_token"]
 
 
-def render_feishu_text(run_date: str, selected: list[dict]) -> str:
-    lines = [f"Daily LLM Papers · {run_date}", ""]
-    medals = ["🥇", "🥈", "🥉"]
-    if not selected:
-        lines.append("今天没有筛出符合偏好的论文。")
-        return "\n".join(lines)
-
-    for i, p in enumerate(selected, start=1):
-        prefix = medals[i - 1] if i <= 3 else f"#{i}"
-        lines += [
-            f"{prefix} {p.get('title') or p['id']}",
-            f"阅读建议：{p.get('reading_level', '快速读')} · HF 👍 {p.get('upvotes', 0)}",
-            f"推荐理由：{p.get('why_recommended', '')}",
-            f"核心贡献：{p.get('core_contribution', '')}",
-            f"HF：{p.get('hf_url')}",
-            f"arXiv：{p.get('abs_url')}",
-            "",
-        ]
-    return "\n".join(lines)
-
-
 def send_feishu(run_date: str, selected: list[dict]) -> None:
     open_id = os.getenv("FEISHU_OPEN_ID")
     if not open_id:
         raise RuntimeError("FEISHU_OPEN_ID is not set")
 
     token = get_feishu_tenant_access_token()
-    text_content = render_feishu_text(run_date, selected)
+    card = render_feishu_card(run_date, selected)
     result = request_json(
         "https://open.feishu.cn/open-apis/im/v1/messages?receive_id_type=open_id",
         headers={"Authorization": f"Bearer {token}"},
         method="POST",
         body={
             "receive_id": open_id,
-            "msg_type": "text",
-            "content": json.dumps({"text": text_content}, ensure_ascii=False),
+            "msg_type": "interactive",
+            "content": json.dumps(card, ensure_ascii=False),
         },
     )
     if result.get("code") != 0:
         raise RuntimeError(f"Feishu message send failed: {result}")
     message_id = ((result.get("data") or {}).get("message_id"))
-    print(f"Feishu private message sent successfully: {message_id or 'ok'}")
+    print(f"Feishu rich card sent successfully: {message_id or 'ok'}")
 
 def github_request(method: str, url: str, token: str, body: dict | None = None):
     return request_json(
