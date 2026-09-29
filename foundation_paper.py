@@ -372,6 +372,16 @@ def create_issue(repo: str, token: str, title: str, body: str):
     )
 
 
+def update_issue_body(repo: str, token: str, issue_number: int, body: str):
+    return github_request(
+        "PATCH",
+        f"https://api.github.com/repos/{repo}/issues/{issue_number}",
+        token,
+        {"body": body},
+    )
+
+
+
 def main():
     if not os.getenv("OPENAI_API_KEY"):
         print("ERROR: OPENAI_API_KEY is not set.", file=sys.stderr)
@@ -396,7 +406,12 @@ def main():
     issue = find_issue_by_title(repo, token, title)
     if issue:
         issue_url = issue.get("html_url")
-        print(f"Issue already exists: {title}")
+        existing_body = issue.get("body") or ""
+        if "<!-- foundation_id:" not in existing_body:
+            issue = update_issue_body(repo, token, issue["number"], body)
+            print(f"Upgraded legacy Foundation issue with progress checkboxes: {title}")
+        else:
+            print(f"Issue already exists: {title}")
     else:
         issue = create_issue(repo, token, title, body)
         issue_url = issue.get("html_url")
