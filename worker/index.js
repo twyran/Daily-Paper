@@ -38,7 +38,8 @@ function extractAction(payload) {
 }
 
 function extractOperatorOpenId(payload) {
-  return (payload && payload.operator && payload.operator.open_id) ||
+  return (payload && payload.open_id) ||
+    (payload && payload.operator && payload.operator.open_id) ||
     (payload && payload.event && payload.event.operator && payload.event.operator.operator_id && payload.event.operator.operator_id.open_id) ||
     (payload && payload.event && payload.event.operator && payload.event.operator.open_id) || null;
 }
@@ -56,7 +57,8 @@ async function markRead(env, paperId, issueUrl) {
   const escaped = escapeRegExp(paperId);
   const pattern = new RegExp("^- \\[ \\](.*?<!-- foundation_id:" + escaped + " -->)$", "m");
   if (!pattern.test(body)) {
-    if (body.includes("foundation_id:" + paperId) && body.includes("- [x]")) return "这篇论文已经标记为已读";
+    const checkedPattern = new RegExp("^- \\[x\\](.*?<!-- foundation_id:" + escaped + " -->)$", "m");
+    if (checkedPattern.test(body)) return "这篇论文已经标记为已读";
     throw new Error("Progress checkbox not found in Foundation issue");
   }
   const newBody = body.replace(pattern, "- [x]$1");
@@ -84,12 +86,13 @@ export default {
     if (request.method !== "POST") return jsonResponse({ error: "method not allowed" }, 405);
     try {
       const payload = await request.json();
-      if (payload && payload.challenge) return jsonResponse({ challenge: payload.challenge });
-      if (env.FEISHU_VERIFICATION_TOKEN && payload && payload.token && payload.token !== env.FEISHU_VERIFICATION_TOKEN) {
+      const verificationToken = payload?.header?.token || payload?.token;
+      if (env.FEISHU_VERIFICATION_TOKEN && verificationToken !== env.FEISHU_VERIFICATION_TOKEN) {
         return jsonResponse({ error: "verification token mismatch" }, 403);
       }
+      if (payload && payload.challenge) return jsonResponse({ challenge: payload.challenge });
       const operator = extractOperatorOpenId(payload);
-      if (env.FEISHU_OPEN_ID && operator && operator !== env.FEISHU_OPEN_ID) {
+      if (!env.FEISHU_OPEN_ID || operator !== env.FEISHU_OPEN_ID) {
         return jsonResponse({ error: "operator not allowed" }, 403);
       }
       const value = extractAction(payload);
