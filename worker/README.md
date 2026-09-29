@@ -2,11 +2,15 @@
 
 业务逻辑位于 `index.js`，`fc.mjs` 仅将阿里云 FC 3.0 的 HTTP 事件转换为相同处理逻辑使用的 Request/Response。
 
-目前测试部署：阿里云 FC，杭州地域，函数 `daily-paper-feishu-callback`，Node.js 20，入口 `index.handler`。
+当前目标部署：Cloudflare Workers Free，`daily-paper-feishu-callback`。执行 `npm install`、`npx wrangler login`、`npm run deploy`，用 Wrangler Secrets 配置凭证。
 
-回调地址：`https://daily-pcallback-jmxxwrgaat.cn-hangzhou.fcapp.run`。已在飞书保存验证并发布；真实卡片点击已确认可以更新 Issue 和触发带排除列表的 workflow_dispatch。
+Worker 地址：`https://daily-paper-feishu-callback.twyran.workers.dev`。本地及线上 challenge 正常；飞书保存两次均超时且 tail 未收到对应请求，迁移仍被网络可达性阻塞。账号没有托管域名或 Worker 自定义域名，下一步需取得可绑定域名后再次验证，不能宣称已切换成功。
+
+飞书已发布配置仍指向原 FC 地址；用户报告 FC 因欠费停止服务。FC 适配代码保留作为历史部署入口，下述打包命令仅用于该入口。
 
 同一天换批复用当天 Issue。`foundation_paper.py` 在发送卡片前补齐新论文的 checkbox，保留已有阅读状态；回归检查：`python -m unittest test_foundation_progress`。
+
+新卡片的 reroll 按钮累积本次工作流的 `FOUNDATION_EXCLUDE_IDS` 和当前论文 ID，并去重传给下一次 workflow_dispatch；推荐 prompt 和论文池不变。
 
 ```sh
 npm install
@@ -21,6 +25,6 @@ npm run build:fc
 
 飞书配置入口：事件与回调 → 回调配置 → 将回调发送至开发者服务器；订阅 `card.action.trigger`，修改后发布版本。
 
-Cloudflare 旧部署保留。迁移原因：实时日志可见对照 GET/challenge 请求，但飞书保存地址超时时没有 POST 到达 Worker。
+Cloudflare challenge 在任何 GitHub 请求之前直接返回，不存在顶层网络请求、重定向或自动重试。
 
 FC 默认 `fcapp.run` 域名仅供测试，长期使用需绑定自定义域名；当前用户尚无域名。加密回调解密尚未实现，不要启用 Encrypt Key 后直接沿用本处理程序。
