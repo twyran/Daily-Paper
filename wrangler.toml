@@ -1,0 +1,6 @@
+name = "daily-paper-feishu-callback"
+main = "worker/index.js"
+compatibility_date = "2026-09-29"
+
+[vars]
+GITHUB_REPOSITORY = "twyran/Daily-Paper"
