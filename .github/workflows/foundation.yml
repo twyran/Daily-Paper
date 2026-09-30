@@ -2,7 +2,7 @@ name: Weekly Foundation Papers
 
 on:
   schedule:
-    - cron: "0 2 * * 6"
+    - cron: "17 2 * * 6"
   workflow_dispatch:
     inputs:
       exclude_ids:
