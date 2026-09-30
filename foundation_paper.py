@@ -275,22 +275,25 @@ def append_missing_progress(existing_body: str, selected: list[dict]) -> str:
     return existing_body.rstrip() + "\n\n### 换批论文阅读进度\n\n" + "\n".join(missing) + "\n"
 
 
-def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | None = None, prior_exclude_ids: set[str] | None = None) -> dict:
+def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | None = None, actions_url: str | None = None) -> dict:
     elements = []
-    for i, p in enumerate(selected, start=1):
-        goals = "\n".join(f"• {x}" for x in p.get("learning_goals", [])[:4])
-        qs = "\n".join(f"{idx}. {x}" for idx, x in enumerate(p.get("interview_questions", [])[:3], start=1))
+    for i, paper in enumerate(selected, start=1):
+        goals = "\n".join(f"• {x}" for x in paper.get("learning_goals", [])[:4])
+        qs = "\n".join(
+            f"{idx}. {x}"
+            for idx, x in enumerate(paper.get("interview_questions", [])[:3], start=1)
+        )
         elements.append({
             "tag": "div",
             "text": {
                 "tag": "lark_md",
                 "content": (
-                    f"**{i}. {p['title']} ({p.get('year', '')})**\n"
-                    f"**方向：** {p.get('track')} · **{priority_label(p.get('priority'))}**\n"
-                    f"**为什么这周读：** {p.get('why_now', '')}\n"
+                    f"**{i}. {paper['title']} ({paper.get('year', '')})**\n"
+                    f"**方向：** {paper.get('track')} · **{priority_label(paper.get('priority'))}**\n"
+                    f"**为什么这周读：** {paper.get('why_now', '')}\n"
                     f"**阅读目标：**\n{goals}\n"
                     f"**面试追问：**\n{qs}\n"
-                    f"**阅读计划：** {p.get('reading_plan', '')}"
+                    f"**阅读计划：** {paper.get('reading_plan', '')}"
                 ),
             },
         })
@@ -299,41 +302,35 @@ def render_feishu_card(run_date: str, selected: list[dict], progress_url: str | 
             "tag": "button",
             "text": {"tag": "plain_text", "content": "打开论文"},
             "type": "primary",
-            "url": p.get("arxiv"),
-        }, {
-            "tag": "button",
-            "text": {"tag": "plain_text", "content": "✅ 标记已读"},
-            "type": "default",
-            "value": {
-                "action": "mark_read",
-                "paper_id": p.get("id"),
-                "issue_url": progress_url or "",
-            },
+            "url": paper.get("arxiv"),
         }]
+        if progress_url:
+            actions.append({
+                "tag": "button",
+                "text": {"tag": "plain_text", "content": "✅ 读完后标记"},
+                "type": "default",
+                "url": progress_url,
+            })
         elements.append({"tag": "action", "actions": actions})
         if i != len(selected):
             elements.append({"tag": "hr"})
 
-    prior_exclude_ids = prior_exclude_ids or set()
-    current_ids = [p.get("id") for p in selected if p.get("id")]
-    reroll_exclude_ids = sorted(prior_exclude_ids | set(current_ids))
-    elements.append({
-        "tag": "action",
-        "actions": [{
-            "tag": "button",
-            "text": {"tag": "plain_text", "content": "🔄 换一批"},
-            "type": "primary",
-            "value": {
-                "action": "reroll",
-                "exclude_ids": ",".join(reroll_exclude_ids),
-            },
-        }],
-    })
+    if actions_url:
+        elements.append({
+            "tag": "action",
+            "actions": [{
+                "tag": "button",
+                "text": {"tag": "plain_text", "content": "🔄 换一批"},
+                "type": "primary",
+                "url": actions_url,
+            }],
+        })
+
     elements.append({
         "tag": "note",
         "elements": [{
             "tag": "plain_text",
-            "content": "可直接在飞书标记已读；不感兴趣或都读过时可点“换一批”。",
+            "content": "标记已读会跳到 GitHub Issue 勾选；换一批会跳到 GitHub Actions，点 Run workflow 即可自动排除今天已推荐过的论文。",
         }],
     })
 
@@ -363,7 +360,7 @@ def get_feishu_tenant_access_token() -> str:
 
 
 
-def send_feishu(run_date: str, selected: list[dict], progress_url: str | None = None, prior_exclude_ids: set[str] | None = None) -> None:
+def send_feishu(run_date: str, selected: list[dict], progress_url: str | None = None, actions_url: str | None = None) -> None:
     open_id = os.getenv("FEISHU_OPEN_ID")
     if not open_id:
         raise RuntimeError("FEISHU_OPEN_ID is not set")
@@ -376,7 +373,7 @@ def send_feishu(run_date: str, selected: list[dict], progress_url: str | None = 
         body={
             "receive_id": open_id,
             "msg_type": "interactive",
-            "content": json.dumps(render_feishu_card(run_date, selected, progress_url, prior_exclude_ids), ensure_ascii=False),
+            "content": json.dumps(render_feishu_card(run_date, selected, progress_url, actions_url), ensure_ascii=False),
         },
     )
     if result.get("code") != 0:
@@ -394,6 +391,22 @@ def find_issue_by_title(repo: str, token: str, title: str) -> dict | None:
         if "pull_request" not in issue and issue.get("title") == title:
             return issue
     return None
+
+
+def extract_foundation_ids_from_body(body: str) -> set[str]:
+    ids = set()
+    marker = "<!-- foundation_id:"
+    for line in (body or "").splitlines():
+        idx = line.find(marker)
+        if idx == -1:
+            continue
+        end = line.find("-->", idx)
+        if end == -1:
+            continue
+        paper_id = line[idx + len(marker):end].strip()
+        if paper_id:
+            ids.add(paper_id)
+    return ids
 
 
 def create_issue(repo: str, token: str, title: str, body: str):
@@ -425,18 +438,34 @@ def main():
     if not repo or not token:
         raise RuntimeError("GITHUB_REPOSITORY / GITHUB_TOKEN are required")
 
+    run_date = datetime.now(LOCAL_TZ).date().isoformat()
+    title = f"Foundation Papers — {run_date}"
+
     papers = load_foundation_papers()
     recent = fetch_recent_daily_issues(repo, token, days=7)
     recommended, completed = fetch_foundation_progress(repo, token)
-    explicit_exclude = {x.strip() for x in os.getenv("FOUNDATION_EXCLUDE_IDS", "").split(",") if x.strip()}
-    selected = select_foundation_papers(papers, recent, recommended, completed, explicit_exclude)
 
-    run_date = datetime.now(LOCAL_TZ).date().isoformat()
+    explicit_exclude = {
+        x.strip()
+        for x in os.getenv("FOUNDATION_EXCLUDE_IDS", "").split(",")
+        if x.strip()
+    }
+
+    # Manual "Run workflow" is treated as a reroll: automatically exclude every
+    # Foundation paper already recommended in today's issue.
+    if os.getenv("FOUNDATION_REROLL", "0") == "1" and not explicit_exclude:
+        existing_today = find_issue_by_title(repo, token, title)
+        if existing_today:
+            explicit_exclude = extract_foundation_ids_from_body(existing_today.get("body") or "")
+
+    selected = select_foundation_papers(
+        papers, recent, recommended, completed, explicit_exclude
+    )
+
     body = render_markdown(run_date, selected)
     Path("foundation_digest.md").write_text(body, encoding="utf-8")
     print(body)
 
-    title = f"Foundation Papers — {run_date}"
     issue = find_issue_by_title(repo, token, title)
     if issue:
         issue_url = issue.get("html_url")
@@ -456,7 +485,8 @@ def main():
         issue_url = issue.get("html_url")
         print(f"Created issue: {issue_url}")
 
-    send_feishu(run_date, selected, issue_url, explicit_exclude)
+    actions_url = f"https://github.com/{repo}/actions/workflows/foundation.yml"
+    send_feishu(run_date, selected, issue_url, actions_url)
 
 
 if __name__ == "__main__":
