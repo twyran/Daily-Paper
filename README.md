@@ -154,3 +154,24 @@ Foundation 卡片不再依赖阿里云 FC、Cloudflare Workers 或其他公网�
 
 这种模式不需要任何额外云服务，也不会产生阿里云 / Cloudflare 回调费用。
 
+
+
+## Daily 推荐策略（D-2 + 双榜单）
+
+Daily Track 现在优先读取 **两天前（D-2）** 的 Hugging Face Daily Papers，而不是当天早晨刚形成的列表。
+
+原因：
+
+- 给当天论文留出更完整的收录时间
+- 给 Hugging Face upvotes 留出约 48 小时沉淀
+- 仍然保持每天早晨固定推送
+
+每天飞书会推两组，共尽量 **6 篇不同论文**：
+
+- **🎯 就业相关 Top 3**：由 GPT-6 Luna 按 LLM 算法岗位 / JD 相关性筛选
+- **🔥 HF 热度 Top 3**：按 Hugging Face upvotes 从高到低选取，并与就业 Top 3 去重
+
+热度 Top 3 的排序由 upvotes 决定，LLM 只负责补充中文技术说明、核心贡献和阅读建议，不参与改变热度排序。
+
+如果 D-2 当天没有 Daily Papers，脚本会继续向前查找最近一期有数据的日期。
+
