@@ -490,6 +490,18 @@ def main():
         sys.exit(2)
 
     feed = fetch_hf_daily_papers()
+    run_date = feed.get("date") or datetime.now(LOCAL_TZ).date().isoformat()
+
+    repo = os.getenv("GITHUB_REPOSITORY")
+    token = os.getenv("GITHUB_TOKEN")
+    title = f"Daily LLM Paper Digest — {run_date}"
+
+    # Idempotency guard: if today's digest already exists, do not call the LLM
+    # or send another Feishu message.
+    if repo and token and issue_exists(repo, token, title):
+        print(f"Issue already exists; skipping duplicate delivery: {title}")
+        return
+
     candidates = build_candidates(feed)
     print(f"Fetched {len(candidates)} normalized candidates from Hugging Face Daily Papers.")
 
@@ -498,19 +510,11 @@ def main():
     Path("daily_digest.md").write_text(digest, encoding="utf-8")
     print(digest)
 
-    run_date = feed.get("date") or datetime.now(LOCAL_TZ).date().isoformat()
     send_feishu(run_date, selected)
 
-    repo = os.getenv("GITHUB_REPOSITORY")
-    token = os.getenv("GITHUB_TOKEN")
-    title = f"Daily LLM Paper Digest — {run_date}"
-
     if repo and token:
-        if issue_exists(repo, token, title):
-            print(f"Issue already exists: {title}")
-        else:
-            issue = create_issue(repo, token, title, digest)
-            print(f"Created issue: {issue.get('html_url')}")
+        issue = create_issue(repo, token, title, digest)
+        print(f"Created issue: {issue.get('html_url')}")
 
 
 if __name__ == "__main__":
