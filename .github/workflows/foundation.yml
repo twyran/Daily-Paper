@@ -39,6 +39,7 @@ jobs:
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || 'https://api.zhizengzeng.com/v1' }}
           FOUNDATION_TOP_N: ${{ vars.FOUNDATION_TOP_N || '2' }}
           FOUNDATION_EXCLUDE_IDS: ${{ inputs.exclude_ids || '' }}
+          FOUNDATION_REROLL: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
           FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
           FEISHU_OPEN_ID: ${{ secrets.FEISHU_OPEN_ID }}
