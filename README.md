@@ -141,65 +141,16 @@ Foundation Track 不再把“推荐过”当成“读完了”。
 
 `Actions → Weekly Foundation Papers → Run workflow`
 
-## 飞书卡片内交互
+## 飞书卡片操作（无额外云服务）
 
-Foundation 卡片支持：
+Foundation 卡片不再依赖阿里云 FC、Cloudflare Workers 或其他公网回调服务。
 
-- **✅ 标记已读**：直接在飞书中标记完成，后台更新 Foundation Issue 进度。
-- **🔄 换一批**：触发新的 Foundation 推荐，并排除当前这批论文。
+现在使用纯跳转模式：
 
-交互按钮需要一个公网 HTTPS 回调地址。当前目标是使用 **Cloudflare Workers Free**，部署与配置参见 [回调服务说明](worker/README.md)。Worker 已部署，但飞书访问 `workers.dev` 的验证仍超时，迁移尚未完成；账号暂无可绑定的自定义域名。旧阿里云 FC 已由用户报告因欠费停服。
+- **✅ 读完后标记**：跳转到对应 Foundation GitHub Issue，在论文前的任务框中手工勾选已读。
+- **🔄 换一批**：跳转到 GitHub Actions 的 `Weekly Foundation Papers` 页面，点击 `Run workflow` 即可重新推荐。
 
-### Cloudflare Worker 文件
+手动触发 `Weekly Foundation Papers` 时，脚本会自动把**当天 Foundation Issue 中已经推荐过的所有论文**加入临时排除集合，因此连续换批不会马上重复今天已经出现过的论文。
 
-- `worker/index.js`：飞书卡片回调处理逻辑
-- `wrangler.toml`：Worker 配置
-- `package.json`：Wrangler 部署命令
+这种模式不需要任何额外云服务，也不会产生阿里云 / Cloudflare 回调费用。
 
-Worker 自身不保存数据库状态：
-
-`飞书按钮 → Cloudflare Worker → GitHub API → 更新 Issue / 触发 Foundation workflow`
-
-### 需要的 Worker Secrets
-
-部署后在 Cloudflare Worker 中配置：
-
-- `GITHUB_PAT`：GitHub fine-grained token，只授权 `twyran/Daily-Paper`
-  - Issues: Read and write
-  - Actions: Read and write
-- `FEISHU_OPEN_ID`：你的飞书 open_id，用于限制操作人
-- `FEISHU_VERIFICATION_TOKEN`：可选；若飞书回调配置使用 verification token，则填写
-
-`GITHUB_REPOSITORY=twyran/Daily-Paper` 已写在 `wrangler.toml` 中，无需作为 Secret。
-
-### 部署方式
-
-安装 Node.js 后，在仓库目录执行：
-
-```bash
-npm install
-npx wrangler login
-npx wrangler secret put GITHUB_PAT
-npx wrangler secret put FEISHU_OPEN_ID
-# 如果飞书启用了 verification token：
-npx wrangler secret put FEISHU_VERIFICATION_TOKEN
-npm run deploy
-```
-
-Wrangler 会给出类似：
-
-`https://daily-paper-feishu-callback.<你的子域>.workers.dev`
-
-的公网地址。
-
-先浏览器打开该地址，应看到：
-
-```json
-{"ok":true,"service":"Daily-Paper Feishu callback"}
-```
-
-然后把这个 Worker URL 填入飞书自建应用的**消息卡片回调地址**。飞书验证 URL 后，卡片中的“标记已读”和“换一批”即可在飞书内直接生效。
-
-### 安全说明
-
-不要把 `GITHUB_PAT`、`FEISHU_OPEN_ID` 或 verification token 写进公开仓库。Worker 代码只从 Cloudflare Secrets 读取敏感值。
