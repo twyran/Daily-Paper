@@ -5,6 +5,8 @@ on:
     - cron: "7,27,47 0 * * *"
     - cron: "17 1 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -47,5 +49,5 @@ jobs:
         with:
           name: daily-digest
           path: daily_digest.md
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 14
