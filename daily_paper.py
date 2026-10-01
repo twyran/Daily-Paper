@@ -610,13 +610,20 @@ def main():
 
     feed = fetch_hf_daily_papers()
     source_date = feed.get("date") or datetime.now(LOCAL_TZ).date().isoformat()
+    delivery_date = feed.get("delivery_date") or datetime.now(LOCAL_TZ).date().isoformat()
 
     repo = os.getenv("GITHUB_REPOSITORY")
     token = os.getenv("GITHUB_TOKEN")
-    title = f"Daily LLM Paper Digest — {source_date}"
+    title = f"Daily LLM Paper Digest — {delivery_date}"
 
-    # Idempotency is keyed by source-date, not delivery-date.
+    # Idempotency is keyed by delivery date. The source batch is D-2 and may
+    # collide with legacy issues created before the D-2 strategy was introduced.
     if repo and token and issue_exists(repo, token, title):
+        Path("daily_digest.md").write_text(
+            f"# Daily LLM Paper Digest — {delivery_date}\n\n"
+            f"> Duplicate scheduled retry skipped. Source batch: {source_date}.\n",
+            encoding="utf-8",
+        )
         print(f"Issue already exists; skipping duplicate delivery: {title}")
         return
 
