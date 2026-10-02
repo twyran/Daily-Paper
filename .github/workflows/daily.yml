@@ -2,8 +2,13 @@ name: Daily LLM Paper Digest
 
 on:
   schedule:
-    - cron: "7,27,47 0 * * *"
-    - cron: "17 1 * * *"
+    # UTC; corresponds to 05:07, 06:27, 07:47, 09:07 in UTC+8.
+    # Multiple attempts mitigate GitHub schedule delays/drops; idempotency
+    # ensures only the first successful delivery sends the digest.
+    - cron: "7 21 * * *"
+    - cron: "27 22 * * *"
+    - cron: "47 23 * * *"
+    - cron: "7 1 * * *"
   workflow_dispatch:
 
 permissions:
