@@ -7,10 +7,19 @@
 Hugging Face Daily Papers
 → GPT-6 Luna 二次筛选
 → Top 3
-→ 飞书群机器人
+→ 飞书自建应用私聊
 → GitHub Issue 归档
 
-GitHub Actions 默认每天 **08:00（Asia/Singapore / 北京时间）**运行。
+GitHub Actions 每天安排四次定时尝试（Asia/Singapore / 北京时间，UTC+8）：
+
+| cron（UTC） | UTC+8 时间 |
+| --- | --- |
+| `7 21 * * *` | 次日 05:07 |
+| `27 22 * * *` | 次日 06:27 |
+| `47 23 * * *` | 次日 07:47 |
+| `7 1 * * *` | 当日 09:07 |
+
+四次尝试用于缓解 GitHub Actions 定时任务延迟或漏触发，并非每天推送四份日报，也不保证准点送达。脚本以 UTC+8 推送日期对应的 Issue 标题检查是否已归档；若已存在，则跳过重复推送。该检查依赖 `GITHUB_REPOSITORY` 和 `GITHUB_TOKEN`。
 
 ## 默认关注方向
 
@@ -31,7 +40,11 @@ Settings → Secrets and variables → Actions → New repository secret
 添加以下 Secrets：
 
 - `OPENAI_API_KEY`：智增增 API Key
-- `FEISHU_APP_ID`：飞书自建应用 App ID\n- `FEISHU_APP_SECRET`：飞书自建应用 App Secret\n- `FEISHU_OPEN_ID`：接收私聊消息的用户 open_id
+- `FEISHU_APP_ID`：飞书自建应用 App ID
+- `FEISHU_APP_SECRET`：飞书自建应用 App Secret
+- `FEISHU_OPEN_ID`：接收私聊消息的用户 open_id
+
+以上四项是正常生成并推送日报 / Foundation 的必填配置。当前脚本不读取 `FEISHU_WEBHOOK_URL`。
 
 可选：
 
@@ -59,11 +72,13 @@ Settings → Secrets and variables → Actions → New repository secret
 
 `https://huggingface.co/api/daily_papers`
 
-脚本优先请求当天 Daily Papers；如果当天列表暂时为空，会自动退回最近一期，避免早上 08:00 没有任何内容。
+脚本按 Asia/Singapore 日期优先请求两天前（D-2）的 Daily Papers；若列表为空，最多再向前查找 7 天，使用最近一期非空列表。
 
 ## GitHub Issue
 
-除了飞书推送，每期结果仍然会创建一个 GitHub Issue 做历史归档。同一日期不会重复创建 Issue。
+除了飞书推送，工作流还会创建 GitHub Issue 做历史归档。同一日期不会重复创建 Issue。
+
+Actions 自动提供 `GITHUB_REPOSITORY`，工作流通过 `secrets.GITHUB_TOKEN` 注入自动生成的令牌，并声明 `issues: write` 权限，无需手动添加这两项 Secret。本地运行日报时，两项可选，但必须同时设置才能启用 Issue 归档与重复推送检查；缺少任一项仍会推送飞书。本地运行 Foundation 时，两项均必填，用于读取近期日报、阅读进度及创建或更新 Issue。
 
 ## 手动测试
 
@@ -75,12 +90,46 @@ Actions → Daily LLM Paper Digest → Run workflow
 
 ## 本地运行
 
+在仓库根目录使用 Python 3.11（与工作流一致）。替换下列占位值后执行；命令会实际调用 API 并发送飞书私聊。
+
 ```bash
-pip install -r requirements.txt
-export OPENAI_API_KEY="..."
-export FEISHU_WEBHOOK_URL="..."
+python -m pip install -r requirements.txt
+
+# 必填：日报与 Foundation 共用
+export OPENAI_API_KEY='替换为 API Key'
+export FEISHU_APP_ID='替换为飞书自建应用 App ID'
+export FEISHU_APP_SECRET='替换为飞书自建应用 App Secret'
+export FEISHU_OPEN_ID='替换为接收用户的 open_id'
+
+# 可选：以下均为当前脚本默认值
+export OPENAI_MODEL='gpt-6-luna'
+export OPENAI_BASE_URL='https://api.zhizengzeng.com/v1'
+export TOP_N='3'                 # 日报每组推荐数量
+export HF_LIMIT='100'            # 日报候选数量上限
+export FOUNDATION_TOP_N='2'      # Foundation 推荐数量
+# export HF_TOKEN='替换为 Hugging Face Access Token'  # 可选，仅日报使用
+
 python daily_paper.py
 ```
+
+如需日报 Issue 归档及重复推送检查，先设置下面两项，再执行日报命令。Foundation 必须设置这两项：
+
+```bash
+export GITHUB_REPOSITORY='twyran/Daily-Paper'
+export GITHUB_TOKEN='替换为具有目标仓库 Issues 读写权限的令牌'
+
+python daily_paper.py
+# 或运行每周基础论文（读取当前目录下的 foundation_papers.json）
+python foundation_paper.py
+```
+
+Foundation 另有两个可选环境变量：`FOUNDATION_EXCLUDE_IDS`（逗号分隔的论文 ID，默认空）和 `FOUNDATION_REROLL`（默认 `0`；设为 `1` 且未显式指定排除 ID 时，自动排除当天 Issue 已推荐的论文）。本地需要换批时可执行：
+
+```bash
+FOUNDATION_REROLL=1 python foundation_paper.py
+```
+
+Actions 手动运行 Foundation 时，工作流自动设置 `FOUNDATION_REROLL=1`，并将可选输入 `exclude_ids` 传给 `FOUNDATION_EXCLUDE_IDS`。
 
 ## 自定义兴趣
 
@@ -91,7 +140,7 @@ python daily_paper.py
 
 除了每天的前沿论文，本仓库还维护一条 Foundation Track，用来补齐与当前就业方向相关的经典与基础工作。
 
-默认每周六 **10:00（Asia/Singapore / 北京时间）**运行：
+默认每周六 **10:17（Asia/Singapore / 北京时间，UTC+8）**定时尝试运行，对应 cron `17 2 * * 6`（UTC 每周六 02:17）；实际启动可能延迟：
 
 `Hugging Face 前沿阅读记录 → 最近 7 天 Daily Digest → GPT-6 Luna 匹配基础缺口 → 推荐 2 篇 Foundation Papers → 飞书私聊 + GitHub Issue`
 
